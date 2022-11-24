@@ -18,6 +18,7 @@ other folders:
     `temp_files`,
     `data_txt_files`
     
+Enter in O2 with: `alienv enter O2/latest-master-o2`
 
 Get the survey with: 
     `root -l -b ReadMFTSurvey.C`
