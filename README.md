@@ -13,7 +13,7 @@ geometry files needed:
     `Geometry.xml`,
     `o2sim_geometry.root`
     
-and mftalign folder with positionsHIC (all the survey for chips)
+and `mftalign` folder with `positionsHIC` (all the survey for chips)
 other folders: 
     `temp_files`,
     `data_txt_files`
