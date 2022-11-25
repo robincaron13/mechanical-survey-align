@@ -21,7 +21,7 @@ other folders:
 Enter in O2 with: `alienv enter O2/latest-master-o2`
 
 Get the survey with: 
-    `root -l -b ReadMFTSurvey.C`
+    `root -l ReadMFTSurvey.C`
     
 To be run with: 
-    `root -l -b RunSurveyAlignWorkflow.cxx`
+    `root -l RunSurveyAlignWorkflow.cxx`
