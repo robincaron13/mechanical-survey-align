@@ -15,9 +15,9 @@
 
 void write_tree(TString namefile, int HICnumber, bool verbose);
 
-bool read_PosHIC(int halfcone, int disk, int side, int diskn, int HICposition,
+bool read_PosHIC(int halfcone, int halfdisk, int halflayer, int HICposition,
                  int HICnumber, bool verbose);
-void read_allPosHICdiskonly(int halfcone, int disk, int diskn);
+void read_allPosHICdiskonly(int halfcone, int disk, int halflayer);
 
 void draw_MFTgeom_misaligned(bool verbose);
 void draw_MFTgeom_ideal(bool verbose);
@@ -45,7 +45,7 @@ typedef struct {
 } CHIPN;
 
 typedef struct {
-  UInt_t halfid, diskid, ladderid, chipid;
+  UInt_t halfid, diskid, ladderid, chipid, HICid;
 } GLOBALID;
 
 POINT point;
@@ -64,18 +64,17 @@ std::string to_string_with_precision(const T a_value, const int n = 4) {
   return out.str();
 }
 
-const int NmaxSides = 4;
+const int NmaxSides = 2;
 const int NmaxLadder00 = 12;
 const int NmaxLadder01 = 12;
 const int NmaxLadder02 = 13;
 const int NmaxLadder03 = 16;
 const int NmaxLadder04 = 17;
 
-const Double_t DISK00[NmaxSides][NmaxLadder00] = {
-    {2029, 3053, 3060, 3050, 3058, 3097, 3095, 3100, 3074, 3075, 2035,
-     2038}, // 00-01_01  Top Front
-    {2023, 3070, 3007, 3109, 3049, 3083, 3081, 3092, 3073, 3072, 2033,
-     2022}, //  Top Back
+//______________________________________________________________________
+//    BOTTOM MFT
+//______________________________________________________________________
+const Double_t BottomDISK00[NmaxSides][NmaxLadder00] = {
     //        {2026,3061,3067,3076,3112,3077,3114,3085,3090,3099,2032,2028},
     //        {2030,3101,3102,3105,3118,3127,3121,3106,3108,3111,2040,2036},
     //        {2048,3148,3167,3103,3164,3161,3165,3163,3157,3094,2046,2047},
@@ -87,22 +86,59 @@ const Double_t DISK00[NmaxSides][NmaxLadder00] = {
 
 };
 
-const Double_t DISK01[NmaxSides][NmaxLadder01] = {
+const Double_t BottomDISK01[NmaxSides][NmaxLadder01] = {
     {2071, 3289, 3294, 3279, 3281, 3292, 3283, 3296, 3277, 3291, 2076,
      2073}, // 00-01_04  Bottom Front
     {2074, 3295, 3297, 3284, 3290, 3287, 3293, 3299, 3300, 3285, 2075,
-     2077}, // Bottom Back
+     2077} // Bottom Back
+};
+
+const Double_t BottomDISK02[NmaxSides][NmaxLadder02] = {
+    {2037, 3116, 3117, 4013, 4012, 3132, 3131, 3130, 4014, 4016, 3150, 3119,
+     2042}, // 00-02_04  Bottom Front
+    {2043, 3123, 3153, 4020, 4029, 3136, 3129, 3147, 4030, 4031, 3149, 3124,
+     2045}, // Bottom Back
+    //{2068,3086,3262,4158,4153,3267,3266,3265,4159,4155,3263,3078,2069},
+    //{2070,3272,3275,4156,4167,3270,3271,3278,4166,4161,3273,3274,2072},
+};
+const Double_t BottomDISK03[NmaxSides][NmaxLadder03] = {
+    {3216, 3215, 4125, 4126, 4128, 4129, 4130, 4144, 4133, 4132, 4131, 4095,
+     4097, 3224, 3226, 3227}, // 00-03_01  Bottom Front
+    {3239, 3240, 4141, 4136, 4152, 4138, 4139, 4140, 4142, 4143, 4107, 4151,
+     4127, 3245, 3247, 3249} // Bottom Back
+    
+};
+const Double_t BottomDISK04[NmaxSides][NmaxLadder04] = {
+    {3207, 3175, 4098, 4096, 5004, 5009, 4089, 4099, 4056, 4045, 4094, 5006,
+     5017, 4032, 4010, 3203, 3204}, // 00-04_01  Bottom Front
+    {3159, 3162, 4100, 4101, 5018, 5021, 4108, 4112, 4110, 4113, 4106, 5023,
+     5022, 4102, 4104, 3209, 3210} // Bottom Back
+};
+
+
+//______________________________________________________________________
+//    TOP MFT
+//______________________________________________________________________
+const Double_t TopDISK00[NmaxSides][NmaxLadder00] = {
+    {2029, 3053, 3060, 3050, 3058, 3097, 3095, 3100, 3074, 3075, 2035,
+     2038}, // 00-01_01  Top Front
+    {2023, 3070, 3007, 3109, 3049, 3083, 3081, 3092, 3073, 3072, 2033,
+     2022}, //  Top Back
+    //        {2026,3061,3067,3076,3112,3077,3114,3085,3090,3099,2032,2028},
+    //        {2030,3101,3102,3105,3118,3127,3121,3106,3108,3111,2040,2036},
+    //        {2048,3148,3167,3103,3164,3161,3165,3163,3157,3094,2046,2047},
+    //        {2049,3168,3171,3176,3170,3205,3174,3178,3172,3169,2010,2044},
+
+};
+
+const Double_t TopDISK01[NmaxSides][NmaxLadder01] = {
     {2060, 3158, 3196, 3182, 3166, 3191, 3195, 3201, 3194, 3197, 2058,
      2059}, // 00-01_06   Top Front
     {2056, 3200, 3199, 3192, 3186, 3183, 3202, 3190, 3193, 3198, 2054,
      2055}, //  Top Back
 };
 
-const Double_t DISK02[NmaxSides][NmaxLadder02] = {
-    {2037, 3116, 3117, 4013, 4012, 3132, 3131, 3130, 4014, 4016, 3150, 3119,
-     2042}, // 00-02_04  Bottom Front
-    {2043, 3123, 3153, 4020, 4029, 3136, 3129, 3147, 4030, 4031, 3149, 3124,
-     2045}, // Bottom Back
+const Double_t TopDISK02[NmaxSides][NmaxLadder02] = {
     //{2068,3086,3262,4158,4153,3267,3266,3265,4159,4155,3263,3078,2069},
     //{2070,3272,3275,4156,4167,3270,3271,3278,4166,4161,3273,3274,2072},
     {2050, 3238, 3214, 4119, 4116, 3213, 3206, 3208, 4111, 4114, 3211, 3212,
@@ -110,79 +146,230 @@ const Double_t DISK02[NmaxSides][NmaxLadder02] = {
     {2057, 3237, 3235, 4120, 4121, 3236, 3223, 3230, 4122, 4124, 3232, 3234,
      2053}, //  Top Back
 };
-const Double_t DISK03[NmaxSides][NmaxLadder03] = {
-    {3216, 3215, 4125, 4126, 4128, 4129, 4130, 4144, 4133, 4132, 4131, 4095,
-     4097, 3224, 3226, 3227}, // 00-03_01  Bottom Front
-    {3239, 3240, 4141, 4136, 4152, 4138, 4139, 4140, 4142, 4143, 4107, 4151,
-     4127, 3245, 3247, 3249}, // Bottom Back
+const Double_t TopDISK03[NmaxSides][NmaxLadder03] = {
     {3139, 3141, 4075, 4023, 4092, 4036, 4067, 4084, 4079, 4080, 4086, 4076,
      4053, 3140, 3142, 3143}, // 00-03_03   Top Front
     {3144, 3145, 4054, 4066, 4059, 4060, 4061, 4062, 4063, 4069, 4083, 4085,
      4068, 3146, 3152, 3110}, //  Top Back
 };
-const Double_t DISK04[NmaxSides][NmaxLadder04] = {
-    {3207, 3175, 4098, 4096, 5004, 5009, 4089, 4099, 4056, 4045, 4094, 5006,
-     5017, 4032, 4010, 3203, 3204}, // 00-04_01  Bottom Front
-    {3159, 3162, 4100, 4101, 5018, 5021, 4108, 4112, 4110, 4113, 4106, 5023,
-     5022, 4102, 4104, 3209, 3210}, // Bottom Back
+const Double_t TopDISK04[NmaxSides][NmaxLadder04] = {
     {3133, 3113, 4007, 4008, 5007, 5013, 4040, 4027, 4026, 4038, 4041, 5014,
      5010, 4019, 4047, 3156, 3134}, // 00-04_02   Top Front
     {3135, 3128, 4022, 4024, 5011, 5016, 4011, 4033, 4048, 4051, 4039, 5020,
      5012, 4034, 4006, 3151, 3137}, //  Top Back
 };
 
-double function_nchipPerHalfDisk(TString namedisk = "00", int half_disk = 0) {
+double function_nchipPerHalfDisk(int half_MFT = 0, TString namedisk = "00", int half_disk = 0) {
   Int_t n = 0;
-  if (namedisk == "00") {
-    for (int i = 0; i < NmaxLadder00; i++) {
-      n = n + Int_t(DISK00[half_disk][i] / 1000.0);
-    }
+  if (half_MFT == 0) {
+      if (namedisk == "00") {
+        for (int i = 0; i < NmaxLadder00; i++) {
+          n = n + Int_t(BottomDISK00[half_disk][i] / 1000.0);
+        }
+      }
+      if (namedisk == "01") {
+        for (int i = 0; i < NmaxLadder01; i++) {
+          n = n + Int_t(BottomDISK01[half_disk][i] / 1000.0);
+        }
+      }
+      if (namedisk == "02") {
+        for (int i = 0; i < NmaxLadder02; i++) {
+          n = n + Int_t(BottomDISK02[half_disk][i] / 1000.0);
+        }
+      }
+      if (namedisk == "03") {
+        for (int i = 0; i < NmaxLadder03; i++) {
+          n = n + Int_t(BottomDISK03[half_disk][i] / 1000.0);
+        }
+      }
+      if (namedisk == "04") {
+        for (int i = 0; i < NmaxLadder04; i++) {
+          n = n + Int_t(BottomDISK04[half_disk][i] / 1000.0);
+        }
+      }
   }
-  if (namedisk == "01") {
-    for (int i = 0; i < NmaxLadder01; i++) {
-      n = n + Int_t(DISK01[half_disk][i] / 1000.0);
+    if (half_MFT == 1) {
+        if (namedisk == "00") {
+          for (int i = 0; i < NmaxLadder00; i++) {
+            n = n + Int_t(TopDISK00[half_disk][i] / 1000.0);
+          }
+        }
+        if (namedisk == "01") {
+          for (int i = 0; i < NmaxLadder01; i++) {
+            n = n + Int_t(TopDISK01[half_disk][i] / 1000.0);
+          }
+        }
+        if (namedisk == "02") {
+          for (int i = 0; i < NmaxLadder02; i++) {
+            n = n + Int_t(TopDISK02[half_disk][i] / 1000.0);
+          }
+        }
+        if (namedisk == "03") {
+          for (int i = 0; i < NmaxLadder03; i++) {
+            n = n + Int_t(TopDISK03[half_disk][i] / 1000.0);
+          }
+        }
+        if (namedisk == "04") {
+          for (int i = 0; i < NmaxLadder04; i++) {
+            n = n + Int_t(TopDISK04[half_disk][i] / 1000.0);
+          }
+        }
     }
-  }
-  if (namedisk == "02") {
-    for (int i = 0; i < NmaxLadder02; i++) {
-      n = n + Int_t(DISK02[half_disk][i] / 1000.0);
-    }
-  }
-  if (namedisk == "03") {
-    for (int i = 0; i < NmaxLadder03; i++) {
-      n = n + Int_t(DISK03[half_disk][i] / 1000.0);
-    }
-  }
-  if (namedisk == "04") {
-    for (int i = 0; i < NmaxLadder04; i++) {
-      n = n + Int_t(DISK04[half_disk][i] / 1000.0);
-    }
-  }
-
   return n;
 };
 
-double function_nchip(TString namedisk = "00", int half_disk = 0,
+double function_nchip(int half_MFT = 0, TString namedisk = "00", int half_disk = 0,
                       int ladder = 0) {
   Int_t n = 0;
-  if (namedisk == "00") {
-    n = Int_t(DISK00[half_disk][ladder] / 1000.0);
-  }
-  if (namedisk == "01") {
-    n = Int_t(DISK01[half_disk][ladder] / 1000.0);
-  }
-  if (namedisk == "02") {
-    n = Int_t(DISK02[half_disk][ladder] / 1000.0);
-  }
-  if (namedisk == "03") {
-    n = Int_t(DISK03[half_disk][ladder] / 1000.0);
-  }
-  if (namedisk == "04") {
-    n = Int_t(DISK04[half_disk][ladder] / 1000.0);
-  }
+    if (half_MFT == 0) {
+        if (namedisk == "00") {
+          n = Int_t(BottomDISK00[half_disk][ladder] / 1000.0);
+        }
+        if (namedisk == "01") {
+          n = Int_t(BottomDISK01[half_disk][ladder] / 1000.0);
+        }
+        if (namedisk == "02") {
+          n = Int_t(BottomDISK02[half_disk][ladder] / 1000.0);
+        }
+        if (namedisk == "03") {
+          n = Int_t(BottomDISK03[half_disk][ladder] / 1000.0);
+        }
+        if (namedisk == "04") {
+          n = Int_t(BottomDISK04[half_disk][ladder] / 1000.0);
+        }
+    }
+    if (half_MFT == 1) {
+        if (namedisk == "00") {
+          n = Int_t(TopDISK00[half_disk][ladder] / 1000.0);
+        }
+        if (namedisk == "01") {
+          n = Int_t(TopDISK01[half_disk][ladder] / 1000.0);
+        }
+        if (namedisk == "02") {
+          n = Int_t(TopDISK02[half_disk][ladder] / 1000.0);
+        }
+        if (namedisk == "03") {
+          n = Int_t(TopDISK03[half_disk][ladder] / 1000.0);
+        }
+        if (namedisk == "04") {
+          n = Int_t(TopDISK04[half_disk][ladder] / 1000.0);
+        }
+    }
 
   return n;
 };
+
+
+const int NmaxHIC = 280;
+//______________________________________________________________________
+//    ALL HICs in MFT following the geometry ids
+//______________________________________________________________________
+const Double_t MFT_HICnumberGeo[NmaxHIC] = {
+    // BOTTOM
+    // layer 0 : DISK00-01/Disk_MD00-01_01/Front_MD00-01_01
+    2029, 3053, 3060, 3050, 3058, 3097, 3095, 3100, 3074, 3075, 2035,
+     2038,
+    // layer 1 : DISK00-01/Disk_MD00-01_01/Back_MD00-01_01
+    2023, 3070, 3007, 3109, 3049, 3083, 3081, 3092, 3073, 3072, 2033,
+     2022,
+    // layer 2 : DISK00-01/Disk_MD00-01_06/Front_MD00-01_06
+    2060, 3158, 3196, 3182, 3166, 3191, 3195, 3201, 3194, 3197, 2058,
+     2059,
+    // layer 3 : DISK00-01/Disk_MD00-01_06/Back_MD00-01_06
+    2056, 3200, 3199, 3192, 3186, 3183, 3202, 3190, 3193, 3198, 2054,
+     2055,
+    // layer 4 : DISK02/Disk_MD02_02/Front_MD02_02
+    2037, 3116, 3117, 4013, 4012, 3132, 3131, 3130, 4014, 4016, 3150, 3119,
+     2042,
+    // layer 5 : DISK02/Disk_MD02_02/Back_MD02_02
+    2043, 3123, 3153, 4020, 4029, 3136, 3129, 3147, 4030, 4031, 3149, 3124,
+     2045,
+    // layer 6 : DISK03/Disk_MD03_03/Front_MD03_03
+    3139, 3141, 4075, 4023, 4092, 4036, 4067, 4084, 4079, 4080, 4086, 4076,
+     4053, 3140, 3142, 3143,
+    // layer 7 : DISK03/Disk_MD03_03/Back_MD03_03
+    3110, 3152, 3146, 4068, 4085, 4083, 4069, 4063, 4062, 4061, 4060, 4059, 4066,
+    4054, 3145, 3144,
+    // layer 8 : DISK04/Disk_MD04_02/Front_MD04_02
+    3133, 3113, 4007, 4008, 5007, 5013, 4040, 4027, 4026, 4038, 4041, 5014,
+     5010, 4019, 4047, 3156, 3134,
+    // layer 9 : DISK04/Disk_MD04_02/Back_MD04_02
+    3137, 3151, 4006, 4034, 5012, 5020, 4039, 4051, 4048, 4033, 4011, 5016, 5011,
+    4024, 4022, 3128, 3135,
+    
+    // TOP
+    // layer 0 : DISK00-01/Disk_MD00-01_07/Front_MD00-01_07
+    2062, 3255, 3248, 3254, 3242, 3243, 3229, 3244, 3250, 3252, 2063,
+    2041,
+   // layer 1 : DISK00-01/Disk_MD00-01_07/Back_MD00-01_07
+   2066, 3256, 3257, 3258, 3259, 3253, 3261, 3246, 3251, 3260, 2065,
+    2067,
+   // layer 2 : DISK00-01/Disk_MD00-01_04/Front_MD00-01_04
+   //2071, 3289, 3294, 3279, 3281, 3292, 3283, 3296, 3277, 3291, 2076, 2073,
+   2048, 3148, 3167, 3103, 3164, 3161, 3165, 3163, 3157, 3094, 2046,
+    2047,
+   // layer 3 : DISK00-01/Disk_MD00-01_04/Back_MD00-01_04
+   //2074, 3295, 3297, 3284, 3290, 3287, 3293, 3299, 3300, 3285, 2075, 2077,
+   2049, 3168, 3171, 3176, 3170, 3205, 3174, 3178, 3172, 3169, 2010,
+    2044,
+   // layer 4 : DISK02/Disk_MD02_03/Front_MD02_03
+    //2050, 3238, 3214, 4119, 4116, 3213, 3206, 3208, 4111, 4114, 3211, 3212, 2061,
+    2068, 3086, 3262, 4158, 4153, 3267, 3266, 3265, 4159, 4155, 3263, 3078,
+     2069,
+   // layer 5 : DISK02/Disk_MD02_03/Back_MD02_03
+    //2053, 3234, 3232, 4124, 4122, 3230, 3223, 3236, 4121, 4120, 3235, 3237, 2057,
+    2070, 3272, 3275, 4156, 4167, 3270, 3271, 3278, 4166, 4161, 3273, 3274,
+     2072,
+   // layer 6 : DISK03/Disk_MD03_01/Front_MD03_01
+   3216, 3215, 4125, 4126, 4128, 4129, 4130, 4144, 4133, 4132, 4131, 4095,
+    4097, 3224, 3226, 3227,
+   // layer 7 : DISK03/Disk_MD03_01/Back_MD03_01
+   3239, 3240, 4141, 4136, 4152, 4138, 4139, 4140, 4142, 4143, 4107, 4151,
+    4127, 3245, 3247, 3249,
+   // layer 8 : DISK04/Disk_MD04_01/Front_MD04_01
+   3207, 3175, 4098, 4096, 5004, 5009, 4089, 4099, 4056, 4045, 4094, 5006,
+    5017, 4032, 4010, 3203, 3204,
+   // layer 9 : DISK04/Disk_MD04_01/Back_MD04_01
+   //3210, 3209, 4104, 4102, 5022, 5023, 4106, 4113, 4110, 4112, 4108, 5021, 5018, 4101, 4100, 3162, 3159
+    3159, 3162, 4100, 4101, 5018, 5021,  4108,  4112, 4110, 4113, 4106, 5023, 5022, 4102, 4104, 3209, 3210
+};
+
+//______________________________________________________________________
+// True DISK numbers installed
+// OLD one
+const Int_t DISK_POS_OLD[10] = {1, 6, 2, 3, 2,
+                            7, 4, 4, 1, 1};
+// New one GOOD one
+const Int_t DISK_POS[10] = {1, 6, 2, 3, 2,  // BOTTOM h0
+                            7, 4, 3, 1, 1};   // TOP h1
+//______________________________________________________________________
+
+const char *nameDISKintalled[20] = {
+    // BOTTOM
+    "DISK00-01/Disk_MD00-01_01/Front_MD00-01_01",
+    "DISK00-01/Disk_MD00-01_01/Back_MD00-01_01",
+    "DISK00-01/Disk_MD00-01_06/Front_MD00-01_06",
+    "DISK00-01/Disk_MD00-01_06/Back_MD00-01_06",
+    "DISK02/Disk_MD02_02/Front_MD02_02",
+    "DISK02/Disk_MD02_02/Back_MD02_02",
+    "DISK03/Disk_MD03_03/Front_MD03_03",
+    "DISK03/Disk_MD03_03/Back_MD03_03",
+    "DISK04/Disk_MD04_02/Front_MD04_02",
+    "DISK04/Disk_MD04_02/Back_MD04_02",
+    // TOP
+    "DISK00-01/Disk_MD00-01_07/Front_MD00-01_07",
+    "DISK00-01/Disk_MD00-01_07/Back_MD00-01_07",
+    "DISK00-01/Disk_MD00-01_04/Front_MD00-01_04",
+    "DISK00-01/Disk_MD00-01_04/Back_MD00-01_04",
+    "DISK02/Disk_MD02_03/Front_MD02_03",
+    "DISK02/Disk_MD02_03/Back_MD02_03",
+    //"DISK02/Disk_MD02_04/Back_MD02_04",
+    "DISK03/Disk_MD03_01/Front_MD03_01",
+    "DISK03/Disk_MD03_01/Back_MD03_01",
+    "DISK04/Disk_MD04_01/Front_MD04_01",
+    "DISK04/Disk_MD04_01/Back_MD04_01"
+};
+
 
 Int_t Nbinx = 800;
 Int_t Nbiny = 800;
@@ -420,7 +607,6 @@ const Double_t Dglo_AM[4][2] = {{dy_pad_AM_BL, dx_pad_AM_TR},
                                 {dy_pad_AM_TR, dx_pad_AM_TL},
                                 {dy_pad_AM_BL, dx_pad_AM_TL}};
 
-const Int_t DISK_POS[10] = {7, 4, 4, 1, 1, 1, 6, 2, 3, 2};
 
 int nladder = 0;
 int k_disk = 0;
@@ -437,87 +623,113 @@ void ReadMFTSurvey() {
 void ReadMFTSurveyChip(const char *outputname) {
   myfile_surveypos.open(outputname);
   read_allPosHICdiskonly(0, 0, 0);
-  read_allPosHICdiskonly(0, 1, 1);
-  read_allPosHICdiskonly(0, 2, 2);
-  read_allPosHICdiskonly(0, 3, 3);
-  read_allPosHICdiskonly(0, 4, 4);
-  read_allPosHICdiskonly(1, 0, 5);
-  read_allPosHICdiskonly(1, 1, 6);
-  read_allPosHICdiskonly(1, 2, 7);
-  read_allPosHICdiskonly(1, 3, 8);
-  read_allPosHICdiskonly(1, 4, 9);
+  read_allPosHICdiskonly(0, 0, 1);
+
+  read_allPosHICdiskonly(0, 1, 2);
+  read_allPosHICdiskonly(0, 1, 3);
+
+  read_allPosHICdiskonly(0, 2, 4);
+  read_allPosHICdiskonly(0, 2, 5);
+
+  read_allPosHICdiskonly(0, 3, 6);
+  read_allPosHICdiskonly(0, 3, 7);
+
+  read_allPosHICdiskonly(0, 4, 8);
+  read_allPosHICdiskonly(0, 4, 9);
+
+    
+  read_allPosHICdiskonly(1, 0, 10);
+  read_allPosHICdiskonly(1, 0, 11);
+
+  read_allPosHICdiskonly(1, 1, 12);
+  read_allPosHICdiskonly(1, 1, 13);
+
+  read_allPosHICdiskonly(1, 2, 14);
+  read_allPosHICdiskonly(1, 2, 15);
+
+  read_allPosHICdiskonly(1, 3, 16);
+  read_allPosHICdiskonly(1, 3, 17);
+
+  read_allPosHICdiskonly(1, 4, 18);
+  read_allPosHICdiskonly(1, 4, 19);
+
   myfile_surveypos.close();
 }
 
-void read_allPosHICdiskonly(int halfcone = 0, int disk = 0, int diskn = 0) {
-  for (int side = 0; side < 2; side++) {
-    for (int pos = 0; pos < 35; pos++) {
-      for (int hic = 1000; hic < 6000; hic++) {
-        if (read_PosHIC(halfcone, disk, side, DISK_POS[diskn], pos, hic,
+void read_allPosHICdiskonly(int halfcone = 0, int halfdisk = 0, int halflayer = 0) {
+//  for (int side = 0; side < 2; side++) {
+//    for (int pos = 1; pos < 35; pos++) {
+//      for (int hic = 0; hic < NmaxHIC; hic++) {
+//        if (read_PosHIC(halfcone, halfdisk, side, halflayer, pos, MFT_HICnumberGeo[hic],
+//                        true) == false)
+//          continue;
+//      }
+//    }
+//  }
+    for (int pos = 1; pos < 35; pos++) {
+      for (int hic = 0; hic < NmaxHIC; hic++) {
+        if (read_PosHIC(halfcone, halfdisk, halflayer, pos, MFT_HICnumberGeo[hic],
                         true) == false)
           continue;
       }
     }
-  }
 }
 
-bool read_PosHIC(int halfcone = 0, int disk = 0, int side = 0, int diskn = 0,
+bool read_PosHIC(int halfcone = 0, int halfdisk = 0, int halflayer = 0,
                  int HICposition = 0, int HICnumber = 0, bool verbose = true) {
   ifstream in;
   const char *nameSide[2] = {"Front", "Back"};
   const char *nameDisk[5] = {"00-01", "00-01", "02", "03", "04"};
   TString nameHICposition = to_string_with_precision(HICposition);
   TString nameHICnumber = to_string_with_precision(HICnumber);
-  int diskn2 = diskn;
-  int HICposition2 = HICposition + 1;
+    
+  int halflayer2 = halflayer;
   TString namefile =
-      Form("mftalign/positionsHIC/DISK%s/DISK_MD%s_%02d/%s_MD%s_%02d/"
-           "Pos%02d_HIC_%4d.txt",
-           nameDisk[disk], nameDisk[disk], diskn2, nameSide[side],
-           nameDisk[disk], diskn2, HICposition2, HICnumber);
+      Form("mftalign/positionsHIC/%s/Pos%02d_HIC_%4d.txt",
+           nameDISKintalled[halflayer], HICposition, HICnumber);
   // cout<<namefile<<endl;
 
   in.open(namefile);
-
+    
   if (!in.is_open()) {
     return false;
   }
 
-  printf("\n----> Read the misaligned chip positions on HIC from file:\n----> "
+  printf("\n----> Read the survey measurments for the file:\n----> "
          "%s\n",
-         Form("Pos%02d_HIC_%4d.txt", HICposition, HICnumber));
+         Form(" %s  -- Pos%02d_HIC_%4d.txt", nameDISKintalled[halflayer], HICposition, HICnumber));
 
   half_cone = halfcone;
   //
-  //    if( (diskn==7) && (disk==0) && (side==0) ) half_cone=0; k_disk= 0;  //
-  //    half 0 disk 0 front (bottom) if( (diskn==7) && (disk==0) && (side==1) )
-  //    half_cone=0; k_disk= 0;  // half 0 disk 0 back (bottom) if( (diskn==4)
-  //    && (disk==1) && (side==0) ) half_cone=0; k_disk= 1;  // half 0 disk 1
-  //    front (bottom) if( (diskn==4) && (disk==1) && (side==1) ) half_cone=0;
-  //    k_disk= 1;  // half 0 disk 1 back (bottom) if( (diskn==4) && (disk==2)
-  //    && (side==0) ) half_cone=0; k_disk= 2;  // half 0 disk 2 front (bottom)
-  //    if( (diskn==4) && (disk==2) && (side==1) ) half_cone=0; k_disk= 2;  //
-  //    half 0 disk 2 back (bottom) if( (diskn==1) && (disk==3) && (side==0) )
-  //    half_cone=0; k_disk= 3;  // half 0 disk 3 front (bottom) if( (diskn==1)
-  //    && (disk==3) && (side==1) ) half_cone=0; k_disk= 3;  // half 0 disk 3
-  //    back (bottom) if( (diskn==1) && (disk==4) && (side==0) ) half_cone=0;
-  //    k_disk= 4;  // half 0 disk 4 front (bottom) if( (diskn==1) && (disk==4)
-  //    && (side==1) ) half_cone=0; k_disk= 4;  // half 0 disk 4 back (bottom)
+  //    if( (halflayer==7) && (halfdisk==0) && (side==0) ) half_cone=0; k_halfdisk= 0;  //
+  //    half 0 halfdisk 0 front (bottom) if( (halflayer==7) && (halfdisk==0) && (side==1) )
+  //    half_cone=0; k_halfdisk= 0;  // half 0 halfdisk 0 back (bottom) if( (halflayer==4)
+  //    && (halfdisk==1) && (side==0) ) half_cone=0; k_halfdisk= 1;  // half 0 halfdisk 1
+  //    front (bottom) if( (halflayer==4) && (halfdisk==1) && (side==1) ) half_cone=0;
+  //    k_halfdisk= 1;  // half 0 halfdisk 1 back (bottom) if( (halflayer==4) && (halfdisk==2)
+  //    && (side==0) ) half_cone=0; k_halfdisk= 2;  // half 0 halfdisk 2 front (bottom)
+  //    if( (halflayer==4) && (halfdisk==2) && (side==1) ) half_cone=0; k_halfdisk= 2;  //
+  //    half 0 halfdisk 2 back (bottom) if( (halflayer==1) && (halfdisk==3) && (side==0) )
+  //    half_cone=0; k_halfdisk= 3;  // half 0 halfdisk 3 front (bottom) if( (halflayer==1)
+  //    && (halfdisk==3) && (side==1) ) half_cone=0; k_halfdisk= 3;  // half 0 halfdisk 3
+  //    back (bottom) if( (halflayer==1) && (halfdisk==4) && (side==0) ) half_cone=0;
+  //    k_halfdisk= 4;  // half 0 halfdisk 4 front (bottom) if( (halflayer==1) && (halfdisk==4)
+  //    && (side==1) ) half_cone=0; k_halfdisk= 4;  // half 0 halfdisk 4 back (bottom)
   //
-  //    if( (diskn==1) && (disk==0) && (side==0) ) half_cone=1; k_disk= 0;  //
-  //    half 1 disk 0 front (top) if( (diskn==1) && (disk==0) && (side==1) )
-  //    half_cone=1; k_disk= 0;  // half 1 disk 0 back (top) if( (diskn==6) &&
-  //    (disk==1) && (side==0) ) half_cone=1; k_disk= 1;  // half 1 disk 1 front
-  //    (top) if( (diskn==6) && (disk==1) && (side==1) ) half_cone=1; k_disk= 1;
-  //    // half 1 disk 1 back (top) if( (diskn==2) && (disk==2) && (side==0) )
-  //    half_cone=1; k_disk= 2;  // half 1 disk 2 front (top) if( (diskn==2) &&
-  //    (disk==2) && (side==1) ) half_cone=1; k_disk= 2;  // half 1 disk 2 back
-  //    (top) if( (diskn==3) && (disk==3) && (side==0) ) half_cone=1; k_disk= 3;
-  //    // half 1 disk 3 front (top) if( (diskn==3) && (disk==3) && (side==1) )
-  //    half_cone=1; k_disk= 3;  // half 1 disk 3 back (top) if( (diskn==2) &&
-  //    (disk==4) && (side==0) ) half_cone=1; k_disk= 4;  // half 1 disk 4 front
-  //    (top) if( (diskn==2) && (disk==4) && (side==1) ) half_cone=1; k_disk= 4;
-  //    // half 1 disk 4 back (top)
+  //    if( (halflayer==1) && (halfdisk==0) && (side==0) ) half_cone=1; k_halfdisk= 0;  //
+  //    half 1 halfdisk 0 front (top) if( (halflayer==1) && (halfdisk==0) && (side==1) )
+  //    half_cone=1; k_halfdisk= 0;  // half 1 halfdisk 0 back (top) if( (halflayer==6) &&
+  //    (halfdisk==1) && (side==0) ) half_cone=1; k_halfdisk= 1;  // half 1 halfdisk 1 front
+  //    (top) if( (halflayer==6) && (halfdisk==1) && (side==1) ) half_cone=1; k_halfdisk= 1;
+  //    // half 1 halfdisk 1 back (top) if( (halflayer==2) && (halfdisk==2) && (side==0) )
+  //    half_cone=1; k_halfdisk= 2;  // half 1 halfdisk 2 front (top) if( (halflayer==2) &&
+  //    (halfdisk==2) && (side==1) ) half_cone=1; k_halfdisk= 2;  // half 1 halfdisk 2 back
+  //    (top) if( (halflayer==3) && (halfdisk==3) && (side==0) ) half_cone=1; k_halfdisk= 3;
+  //    // half 1 halfdisk 3 front (top) if( (halflayer==3) && (halfdisk==3) && (side==1) )
+  //    half_cone=1; k_halfdisk= 3;  // half 1 halfdisk 3 back (top) if( (halflayer==2) &&
+  //    (halfdisk==4) && (side==0) ) half_cone=1; k_halfdisk= 4;  // half 1 halfdisk 4 front
+  //    (top) if( (halflayer==2) && (halfdisk==4) && (side==1) ) half_cone=1; k_halfdisk= 4;
+  //    // half 1 halfdisk 4 back (top)
 
   //    Float_t nPos;
   //    Float_t x,y,z;
@@ -561,41 +773,42 @@ bool read_PosHIC(int halfcone = 0, int disk = 0, int side = 0, int diskn = 0,
   //    //f->Close();
 
   sensorsurvey.halfid = half_cone;
-  sensorsurvey.diskid = disk;
+  sensorsurvey.diskid = halfdisk;
   sensorsurvey.ladderid = nladder;
+  sensorsurvey.HICid = HICnumber;
 
-  if ((disk == 0) && (nladder < 24))
+  if ((halfdisk == 0) && (nladder < 24))
     nladder++;
-  if ((disk == 1) && (nladder < 24))
+  if ((halfdisk == 1) && (nladder < 24))
     nladder++;
-  if ((disk == 2) && (nladder < 26))
+  if ((halfdisk == 2) && (nladder < 26))
     nladder++;
-  if ((disk == 3) && (nladder < 32))
+  if ((halfdisk == 3) && (nladder < 32))
     nladder++;
-  if ((disk == 4) && (nladder < 34))
+  if ((halfdisk == 4) && (nladder < 34))
     nladder++;
 
-  //    if( (k_disk ==0) &&  (HICposition ==23) ) sensorsurvey.ladderid =
-  //    HICposition; if( (k_disk ==1) &&  (HICposition ==23) )
-  //    sensorsurvey.ladderid = HICposition; if( (k_disk ==2) &&  (HICposition
-  //    ==25) ) sensorsurvey.ladderid = HICposition; if( (k_disk ==3) &&
-  //    (HICposition ==31) ) sensorsurvey.ladderid = HICposition; if( (k_disk
+  //    if( (k_halfdisk ==0) &&  (HICposition ==23) ) sensorsurvey.ladderid =
+  //    HICposition; if( (k_halfdisk ==1) &&  (HICposition ==23) )
+  //    sensorsurvey.ladderid = HICposition; if( (k_halfdisk ==2) &&  (HICposition
+  //    ==25) ) sensorsurvey.ladderid = HICposition; if( (k_halfdisk ==3) &&
+  //    (HICposition ==31) ) sensorsurvey.ladderid = HICposition; if( (k_halfdisk
   //    ==4) &&  (HICposition ==33) ) sensorsurvey.ladderid = HICposition;
 
-  if ((disk == 0) && (nladder == 24))
+  if ((halfdisk == 0) && (nladder == 24))
     nladder = 0;
-  if ((disk == 1) && (nladder == 24))
+  if ((halfdisk == 1) && (nladder == 24))
     nladder = 0;
-  if ((disk == 2) && (nladder == 26))
+  if ((halfdisk == 2) && (nladder == 26))
     nladder = 0;
-  if ((disk == 3) && (nladder == 32))
+  if ((halfdisk == 3) && (nladder == 32))
     nladder = 0;
-  if ((disk == 4) && (nladder == 34))
+  if ((halfdisk == 4) && (nladder == 34))
     nladder = 0;
 
   sensorsurvey.chipid = 0;
 
-  // cout<<side<<"  disk "<<disk<<"   "<<nladder<<"   pos "<<HICposition<<endl;
+  // cout<<"  halfdisk "<<halfdisk<<"   "<<nladder<<"   pos "<<HICposition<<endl;
 
   write_tree(namefile, HICnumber, true);
   draw_HICgeom_misaligned(HICnumber, true, false);
@@ -878,6 +1091,8 @@ void draw_HICgeom_misaligned(int HICnumber = 0, bool verbose = true,
       myfile_surveypos << compt_pad << " " << pointsurvey.x << " "
                        << pointsurvey.y << " " << pointsurvey.z
                        << " "; // write to file
+      
+    //myfile_surveypos << HICnumber << " ";  // (!!)  CHECK the HIC number
     myfile_surveypos << "\n";
 
     compt_pad++;
@@ -1056,9 +1271,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_00fb < NmaxLadder00) {
               // binProfile = profileHIC_posx->FindBin(DISK00[2][nHIC_00fb]); //
               // bottom MFT
-              binLadder = DISK00[2][nHIC_00fb];
+              binLadder = BottomDISK00[0][nHIC_00fb];
               comptnHIC_00fb++;
-              if (comptnHIC_00fb == function_nchip("00", 2, nHIC_00fb))
+              if (comptnHIC_00fb == function_nchip(0,"00", 0, nHIC_00fb))
                 nHIC_00fb++;
               mdisk = 0;
               cout << "----> " << mdisk << endl;
@@ -1067,9 +1282,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_00ft < NmaxLadder00) {
               // binProfile = profileHIC_posx->FindBin(DISK00[0][nHIC_00ft]);
               // //top MFT
-              binLadder = DISK00[0][nHIC_00ft];
+              binLadder = TopDISK00[0][nHIC_00ft];
               comptnHIC_00ft++;
-              if (comptnHIC_00ft == function_nchip("00", 0, nHIC_00ft))
+              if (comptnHIC_00ft == function_nchip(1,"00", 0, nHIC_00ft))
                 nHIC_00ft++;
               mdisk = 1;
               cout << "----> " << mdisk << endl;
@@ -1087,9 +1302,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_00bb < NmaxLadder00) {
               // binProfile = profileHIC_posx->FindBin(DISK00[3][nHIC_00bb]);
               // //bottom MFT
-              binLadder = DISK00[3][nHIC_00bb];
+              binLadder = BottomDISK00[1][nHIC_00bb];
               comptnHIC_00bb++;
-              if (comptnHIC_00bb == function_nchip("00", 3, nHIC_00bb))
+              if (comptnHIC_00bb == function_nchip(0,"00", 1, nHIC_00bb))
                 nHIC_00bb++;
               mdisk = 2;
               cout << "----> " << mdisk << endl;
@@ -1099,9 +1314,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_00bt < NmaxLadder00) {
               // binProfile = profileHIC_posx->FindBin(DISK00[1][nHIC_00bt]);
               // //top MFT
-              binLadder = DISK00[1][nHIC_00bt];
+              binLadder = TopDISK00[1][nHIC_00bt];
               comptnHIC_00bt++;
-              if (comptnHIC_00bt == function_nchip("00", 1, nHIC_00bt))
+              if (comptnHIC_00bt == function_nchip(1,"00", 1, nHIC_00bt))
                 nHIC_00bt++;
               mdisk = 3;
               cout << "----> " << mdisk << endl;
@@ -1120,9 +1335,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
               //                             //binProfile =
               //                             profileHIC_posx->FindBin(DISK01[0][nHIC_01fb]);
               //                             //bottom MFT
-              binLadder = DISK01[0][nHIC_01fb];
+              binLadder = BottomDISK01[0][nHIC_01fb];
               comptnHIC_01fb++;
-              if (comptnHIC_01fb == function_nchip("01", 0, nHIC_01fb))
+              if (comptnHIC_01fb == function_nchip(0,"01", 0, nHIC_01fb))
                 nHIC_01fb++;
               mdisk = 4;
               cout << "----> " << mdisk << endl;
@@ -1131,9 +1346,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_01ft < NmaxLadder01) {
               // binProfile = profileHIC_posx->FindBin(DISK01[2][nHIC_01ft]);
               // //top MFT
-              binLadder = DISK01[2][nHIC_01ft];
+              binLadder = TopDISK01[0][nHIC_01ft];
               comptnHIC_01ft++;
-              if (comptnHIC_01ft == function_nchip("01", 2, nHIC_01ft))
+              if (comptnHIC_01ft == function_nchip(1,"01", 0, nHIC_01ft))
                 nHIC_01ft++;
               mdisk = 5;
               cout << "----> " << mdisk << endl;
@@ -1150,9 +1365,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_01bb < NmaxLadder01) {
               // binProfile = profileHIC_posx->FindBin(DISK01[1][nHIC_01bb]);
               // //bottom MFT
-              binLadder = DISK01[1][nHIC_01bb];
+              binLadder = BottomDISK01[1][nHIC_01bb];
               comptnHIC_01bb++;
-              if (comptnHIC_01bb == function_nchip("01", 1, nHIC_01bb))
+              if (comptnHIC_01bb == function_nchip(0,"01", 1, nHIC_01bb))
                 nHIC_01bb++;
               mdisk = 6;
               cout << "----> " << mdisk << endl;
@@ -1162,9 +1377,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
               //                            //binProfile =
               //                            profileHIC_posx->FindBin(DISK01[3][nHIC_01bt]);
               //                            //top MFT
-              binLadder = DISK01[3][nHIC_01bt];
+              binLadder = TopDISK01[1][nHIC_01bt];
               comptnHIC_01bt++;
-              if (comptnHIC_01bt == function_nchip("02", 3, nHIC_01bt))
+              if (comptnHIC_01bt == function_nchip(1,"02", 1, nHIC_01bt))
                 nHIC_01bt++;
               mdisk = 7;
               cout << "----> " << mdisk << endl;
@@ -1182,9 +1397,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_02fb < NmaxLadder02) {
               // binProfile = profileHIC_posx->FindBin(DISK02[0][nHIC_02fb]);
               // //bottom MFT
-              binLadder = DISK02[0][nHIC_02fb];
+              binLadder = BottomDISK02[0][nHIC_02fb];
               comptnHIC_02fb++;
-              if (comptnHIC_02fb == function_nchip("02", 0, nHIC_02fb))
+              if (comptnHIC_02fb == function_nchip(0,"02", 0, nHIC_02fb))
                 nHIC_02fb++;
               mdisk = 8;
               cout << "----> " << mdisk << endl;
@@ -1193,9 +1408,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_02ft < NmaxLadder02) {
               // binProfile = profileHIC_posx->FindBin(DISK02[2][nHIC_02ft]);
               // //top MFT
-              binLadder = DISK02[2][nHIC_02ft];
+              binLadder = TopDISK02[0][nHIC_02ft];
               comptnHIC_02ft++;
-              if (comptnHIC_02ft == function_nchip("02", 2, nHIC_02ft))
+              if (comptnHIC_02ft == function_nchip(1,"02", 0, nHIC_02ft))
                 nHIC_02ft++;
               mdisk = 9;
               cout << "----> " << mdisk << endl;
@@ -1212,9 +1427,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_02bb < NmaxLadder02) {
               // binProfile = profileHIC_posx->FindBin(DISK02[1][nHIC_02bb]);
               // //bottom MFT
-              binLadder = DISK02[1][nHIC_02bb];
+              binLadder = BottomDISK02[1][nHIC_02bb];
               comptnHIC_02bb++;
-              if (comptnHIC_02bb == function_nchip("02", 1, nHIC_02bb))
+              if (comptnHIC_02bb == function_nchip(0,"02", 1, nHIC_02bb))
                 nHIC_02bb++;
               mdisk = 10;
               cout << "----> " << mdisk << endl;
@@ -1223,9 +1438,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_02bt < NmaxLadder02) {
               // binProfile = profileHIC_posx->FindBin(DISK02[3][nHIC_02bt]);
               // //top MFT
-              binLadder = DISK02[3][nHIC_02bt];
+              binLadder = TopDISK02[1][nHIC_02bt];
               comptnHIC_02bt++;
-              if (comptnHIC_02bt == function_nchip("02", 3, nHIC_02bt))
+              if (comptnHIC_02bt == function_nchip(1,"02", 1, nHIC_02bt))
                 nHIC_02bt++;
               mdisk = 11;
               cout << "----> " << mdisk << endl;
@@ -1243,9 +1458,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_03fb < NmaxLadder03) {
               // binProfile = profileHIC_posx->FindBin(DISK03[0][nHIC_03fb]);
               // //bottom MFT
-              binLadder = DISK03[0][nHIC_03fb];
+              binLadder = BottomDISK03[0][nHIC_03fb];
               comptnHIC_03fb++;
-              if (comptnHIC_03fb == function_nchip("03", 0, nHIC_03fb))
+              if (comptnHIC_03fb == function_nchip(0,"03", 0, nHIC_03fb))
                 nHIC_03fb++;
               mdisk = 12;
               cout << "----> " << mdisk << endl;
@@ -1254,9 +1469,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_03ft < NmaxLadder03) {
               // binProfile = profileHIC_posx->FindBin(DISK03[2][nHIC_03ft]);
               // //top MFT
-              binLadder = DISK03[2][nHIC_03ft];
+              binLadder = TopDISK03[0][nHIC_03ft];
               comptnHIC_03ft++;
-              if (comptnHIC_03ft == function_nchip("03", 2, nHIC_03ft))
+              if (comptnHIC_03ft == function_nchip(1,"03", 0, nHIC_03ft))
                 nHIC_03ft++;
               mdisk = 13;
               cout << "----> " << mdisk << endl;
@@ -1277,9 +1492,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
               //                          //binProfile =
               //                          profileHIC_posx->FindBin(DISK03[1][nHIC_03bb]);
               //                          //bottom MFT
-              binLadder = DISK03[1][nHIC_03bb];
+              binLadder = BottomDISK03[1][nHIC_03bb];
               comptnHIC_03bb++;
-              if (comptnHIC_03bb == function_nchip("03", 1, nHIC_03bb))
+              if (comptnHIC_03bb == function_nchip(0,"03", 1, nHIC_03bb))
                 nHIC_03bb++;
               mdisk = 14;
               cout << "----> " << mdisk << endl;
@@ -1289,9 +1504,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_03bt < NmaxLadder03) {
               // binProfile = profileHIC_posx->FindBin(DISK03[3][nHIC_03bt]);
               // //top MFT
-              binLadder = DISK03[3][nHIC_03bt];
+              binLadder = TopDISK03[1][nHIC_03bt];
               comptnHIC_03bt++;
-              if (comptnHIC_03bt == function_nchip("03", 3, nHIC_03bt))
+              if (comptnHIC_03bt == function_nchip(1,"03", 1, nHIC_03bt))
                 nHIC_03bt++;
               mdisk = 15;
               cout << "----> " << mdisk << endl;
@@ -1308,9 +1523,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_04fb < NmaxLadder04) {
               // binProfile = profileHIC_posx->FindBin(DISK04[0][nHIC_04fb]);
               // //bottom MFT
-              binLadder = DISK04[0][nHIC_04fb];
+              binLadder = BottomDISK04[0][nHIC_04fb];
               comptnHIC_04fb++;
-              if (comptnHIC_04fb == function_nchip("04", 0, nHIC_04fb))
+              if (comptnHIC_04fb == function_nchip(0,"04", 0, nHIC_04fb))
                 nHIC_04fb++;
               mdisk = 16;
               cout << "----> " << mdisk << endl;
@@ -1319,9 +1534,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_04ft < NmaxLadder04) {
               // binProfile = profileHIC_posx->FindBin(DISK04[2][nHIC_04ft]);
               // //top MFT
-              binLadder = DISK04[2][nHIC_04ft];
+              binLadder = TopDISK04[0][nHIC_04ft];
               comptnHIC_04ft++;
-              if (comptnHIC_04ft == function_nchip("04", 2, nHIC_04ft))
+              if (comptnHIC_04ft == function_nchip(1,"04", 0, nHIC_04ft))
                 nHIC_04ft++;
               mdisk = 17;
               cout << "----> " << mdisk << endl;
@@ -1338,9 +1553,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_04bb < NmaxLadder04) {
               // binProfile = profileHIC_posx->FindBin(DISK04[1][nHIC_04bb]);
               // //bottom MFT
-              binLadder = DISK04[1][nHIC_04bb];
+              binLadder = BottomDISK04[1][nHIC_04bb];
               comptnHIC_04bb++;
-              if (comptnHIC_04bb == function_nchip("04", 1, nHIC_04bb))
+              if (comptnHIC_04bb == function_nchip(0,"04", 1, nHIC_04bb))
                 nHIC_04bb++;
               mdisk = 18;
               cout << "----> " << mdisk << endl;
@@ -1349,9 +1564,9 @@ void draw_MFTgeom_misaligned(bool verbose = true) {
             if (nHIC_04bt < NmaxLadder04) {
               // binProfile = profileHIC_posx->FindBin(DISK04[3][nHIC_04bt]);
               // //top MFT
-              binLadder = DISK04[3][nHIC_04bt];
+              binLadder = TopDISK04[1][nHIC_04bt];
               comptnHIC_04bt++;
-              if (comptnHIC_04bt == function_nchip("04", 3, nHIC_04bt))
+              if (comptnHIC_04bt == function_nchip(1,"04", 1, nHIC_04bt))
                 nHIC_04bt++;
               mdisk = 19;
               cout << "----> " << mdisk << endl;
