@@ -1,0 +1,20 @@
+
+Processing RunSurveyAlignWorkflow.cxx...
+[INFO]  >>> RunSurveyAlignWorkflow 
+[INFO] Loading geometry from geofiles/o2sim_geometry.root
+[INFO]  >> MFT geometry loaded
+[INFO] MFT GeometryTGeo::Build total number of sensors 936
+[INFO]  >>>> GetAlignParamsFromSurveyPositions 
+[INFO] half:0 disk:0 >>> x =0.0286204 y =-0.0599897 z =-0.293932 ry =-0.000907779 rz =-0.00120703
+[INFO] half:0 disk:1 >>> x =0.0218071 y =-0.0500004 z =-0.309999 ry =-0.000602402 rz =-0.000602375
+[INFO] half:0 disk:2 >>> x =0.033761 y =-0.0261784 z =-0.305113 ry =-0.000221179 rz =-0.00112434
+[INFO] half:0 disk:3 >>> x =0.0269861 y =-1.38778e-16 z =-0.309902 ry =7.80626e-18 rz =-0.000844386
+[INFO] half:0 disk:4 >>> x =0.0383389 y =0.034336 z =-0.3 ry =-0.000569335 rz =-0.000873952
+[INFO] half:1 disk:0 >>> x =-0.0381239 y =-0.010006 z =-0.25996 ry =7.80626e-18 rz =0.00060235
+[INFO] half:1 disk:1 >>> x =-0.037245 y =-0.0149996 z =-0.249976 ry =7.80626e-18 rz =0.000903755
+[INFO] half:1 disk:2 >>> x =-0.0381511 y =-0.00999981 z =-0.249977 ry =7.80626e-18 rz =0.000602566
+[INFO] half:1 disk:3 >>> x =-0.0291097 y =-0.00499897 z =-0.244986 ry =0.000289577 rz =0.000287766
+[INFO] half:1 disk:4 >>> x =-0.029101 y =-0.00500027 z =-0.249979 ry =7.80626e-18 rz =0.000287516
+[INFO]  --> Storing alignment object locally
+[INFO] Loading geometry from geofiles/o2sim_geometry.root
+[INFO]  >> MFT geometry loaded

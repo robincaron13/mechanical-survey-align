@@ -59,9 +59,9 @@ public:
 
     mTransform.SetSensorId(0, 0, 0, 0);
     mTransform.SetSymName(sname);
-    emptyAlgPar = true;
-    Int_t resultTransform = mTransform.GetModuleMeanTransform(
-        localDeltaTransform, parErr, 0, -1, emptyAlgPar);
+    //emptyAlgPar = true;
+    //Int_t resultTransform = mTransform.GetModuleMeanTransform(
+    //    localDeltaTransform, parErr, 0, -1, emptyAlgPar);
 
     for (Int_t hf = 0; hf < nHalf; hf++) {
       Int_t nDisks = mGeometryTGeo->getNumberOfDisksPerHalf(hf);
@@ -72,19 +72,14 @@ public:
 
       mTransform.SetSensorId(hf, 0, 0, 0);
       mTransform.SetSymName(sname);
-      emptyAlgPar = true;
-      Int_t resultTransform = mTransform.GetModuleMeanTransform(
-          localDeltaTransform, parErr, 0, -1, emptyAlgPar);
+      //emptyAlgPar = true;
+      //Int_t resultTransform = mTransform.GetModuleMeanTransform(
+      //    localDeltaTransform, parErr, 0, -1, emptyAlgPar);
 
       for (Int_t dk = 0; dk < nDisks; dk++) {
         // localDeltaTransform = MisAlignDisk();
         sname = mGeometryTGeo->composeSymNameDisk(hf, dk);
 
-        Int_t nLadders = 0;
-        for (Int_t sensor = mGeometryTGeo->getMinSensorsPerLadder();
-             sensor < mGeometryTGeo->getMaxSensorsPerLadder() + 1; sensor++) {
-          nLadders += mGeometryTGeo->getNumberOfLaddersPerDisk(hf, dk, sensor);
-        }
         if (level == 2) {
 
           mTransform.SetSensorId(hf, dk, 0, 0);
@@ -93,14 +88,13 @@ public:
           Int_t resultTransform = mTransform.GetModuleMeanTransform(
               localDeltaTransform, parErr, level, -1, emptyAlgPar);
         }
-        if (level == 4) {
 
-          mTransform.SetSensorId(hf, dk, 0, 0);
-          mTransform.SetSymName(sname);
-          emptyAlgPar = true;
-          // Int_t resultTransform = mTransform.GetModuleMeanTransform(
-          //     localDeltaTransform, parErr, level, -1, emptyAlgPar);
+        Int_t nLadders = 0;
+        for (Int_t sensor = mGeometryTGeo->getMinSensorsPerLadder();
+             sensor < mGeometryTGeo->getMaxSensorsPerLadder() + 1; sensor++) {
+          nLadders += mGeometryTGeo->getNumberOfLaddersPerDisk(hf, dk, sensor);
         }
+
         if (level == 10) {
 
           mTransform.SetSensorId(hf, dk, 0, 0);
@@ -119,9 +113,9 @@ public:
 
           mTransform.SetSensorId(hf, dk, lr, 0);
           mTransform.SetSymName(sname);
-          emptyAlgPar = true;
-          Int_t resultTransform = mTransform.GetModuleMeanTransform(
-              localDeltaTransform, parErr, 0, -1, emptyAlgPar);
+          //emptyAlgPar = true;
+          //Int_t resultTransform = mTransform.GetModuleMeanTransform(
+          //    localDeltaTransform, parErr, 0, -1, emptyAlgPar);
 
           for (Int_t sr = 0; sr < nSensorsPerLadder; sr++) {
             // localDeltaTransform = MisAlignSensor();
@@ -138,14 +132,7 @@ public:
               Int_t resultTransform = mTransform.GetModuleMeanTransform(
                   localDeltaTransform, parErr, level, nChip, emptyAlgPar);
             }
-            if (level == 2) {
 
-              mTransform.SetSensorId(hf, dk, lr, sr);
-              mTransform.SetSymName(sname);
-              emptyAlgPar = true;
-              // Int_t resultTransform = mTransform.GetModuleMeanTransform(
-              //     localDeltaTransform, parErr, level, nChip, emptyAlgPar);
-            }
             if (level == 10) {
 
               mTransform.SetSensorId(hf, dk, lr, sr);
@@ -167,6 +154,7 @@ public:
     if (verbose) {
       mTransform.PrintAlignPars();
     }
+    mTransform.WriteHistos();
 
     if (!ccdbHost.empty()) {
       std::string path = objectPath.empty()
@@ -241,23 +229,26 @@ public:
       TFile algDiskFile(filenameDisk.c_str(), "read");
       std::vector<o2::detectors::AlignParam> *lAPdisk;
       algDiskFile.GetObject("ccdb_object", lAPdisk);
+
       // loop on disks
       for (int indice = 0; indice < lAPdisk->size(); indice++) {
         o2::detectors::AlignParam &algParDisk = lAPdisk->at(indice);
-        algParDisk.print();
+        if (verbose)
+          algParDisk.print();
         algParDisk.applyToGeometry();
       }
     }
 
     if (!filenameChip.empty()) {
       TFile algChipFile(filenameChip.c_str(), "read");
-
       std::vector<o2::detectors::AlignParam> *lAPchip;
       algChipFile.GetObject("ccdb_object", lAPchip);
 
       // loop on for sensors
       for (int indice = 0; indice < lAPchip->size(); indice++) {
         o2::detectors::AlignParam &algPar = lAPchip->at(indice);
+        if (verbose)
+          algPar.print();
         algPar.applyToGeometry();
       }
     }
@@ -296,6 +287,11 @@ public:
     std::string filenameDisk = "";
     std::string filenameChip = "";
 
+    if (!gGeoManager) {
+      LOG(fatal) << "TGeoManager doesn't exist !";
+      return;
+    }
+
     if (level == 2)
       filenameDisk = "MFTSurveyAlignParDisk.root";
     if (level == 4)
@@ -305,14 +301,9 @@ public:
       filenameDisk = "MFTSurveyAlignParDisk.root";
     }
 
-    MisAlignFromFile(true, filenameDisk, filenameChip);
+    MisAlignFromFile(false, filenameDisk, filenameChip);
     // MisAlignFromFile(true, filenameDisk, filenameChip, filenameChip2,
     // filenameChip3);
-
-    if (!gGeoManager) {
-      LOG(fatal) << "TGeoManager doesn't exist !";
-      return;
-    }
 
     // lock the geometry, or unlock with "false"
     gGeoManager->RefreshPhysicalNodes();
@@ -388,7 +379,7 @@ void loadMFTGeometry(
   LOG(info) << " >> MFT geometry loaded";
 }
 
-void RunSurveyAlignWorkflow(Bool_t verbose = true, Int_t level = 4,
+void RunSurveyAlignWorkflow(Bool_t verbose = false, Int_t level = 2,
                             const std::string &ccdbHost = "", long tmin = 0,
                             long tmax = -1,
                             const std::string &objectPath = "") {
@@ -400,7 +391,7 @@ void RunSurveyAlignWorkflow(Bool_t verbose = true, Int_t level = 4,
   /// level 10 = both: half-disk and chip
 
   LOG(info) << " >>> RunSurveyAlignWorkflow ";
-    
+
   loadMFTGeometry();
 
   o2::mft::SurveyAlignPar surAli;
@@ -408,5 +399,8 @@ void RunSurveyAlignWorkflow(Bool_t verbose = true, Int_t level = 4,
   surAli.GetAlignParamsFromSurveyPositions(verbose, level, ccdbHost, tmin, tmax,
                                            objectPath);
 
-  surAli.GetFileAlignedSurvey(level);
+  loadMFTGeometry();
+
+  // surAli.GetFileAlignedSurvey(level);
+  surAli.GetFileAlignedSurvey(2);
 }
